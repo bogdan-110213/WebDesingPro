@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soporte - WebDesign Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 20px 20px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-header h2 {
+            font-size: 1.2em;
+        }
+
+        .chat-mode {
+            font-size: 0.9em;
+            opacity: 0.9;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .message.user {
+            flex-direction: row-reverse;
+        }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2em;
+            flex-shrink: 0;
+        }
+
+        .message.ai .message-avatar {
+            background: #667eea;
+        }
+
+        .message.user .message-avatar {
+            background: #27ae60;
+        }
+
+        .message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 15px;
+            line-height: 1.4;
+        }
+
+        .message.ai .message-content {
+            background: white;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.user .message-content {
+            background: #667eea;
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.admin .message-content {
+            background: #f39c12;
+            color: white;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message.admin .message-avatar {
+            background: #f39c12;
+        }
+
+        .chat-input {
+            padding: 20px;
+            border-top: 1px solid #ecf0f1;
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 12px 15px;
+            border: 2px solid #ecf0f1;
+            border-radius: 25px;
+            font-size: 1em;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input input:focus {
+            border-color: #667eea;
+        }
+
+        .chat-input button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .chat-input button:hover {
+            background: #5568d3;
+        }
+
+        .human-option {
+            padding: 15px 20px;
+            background: #fff3cd;
+            border-top: 1px solid #ecf0f1;
+            text-align: center;
+        }
+
+        .human-option p {
+            color: #856404;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .human-option button {
+            background: #ffc107;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .human-option button:hover {
+            background: #e0a800;
+        }
+
+        .typing-indicator {
+            display: none;
+            padding: 10px;
+            color: #7f8c8d;
+            font-style: italic;
+            font-size: 0.9em;
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .chat-container {
+                height: 100vh;
+                max-height: 100vh;
+                border-radius: 0;
+            }
+
+            .chat-header {
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-header">
+            <div>
+                <h2><i class="fas fa-headset"></i> Soporte WebDesign Pro</h2>
+                <div class="chat-mode" id="chatMode">Modo: Asistente IA</div>
+            </div>
+            <button onclick="cerrarChat()" style="background: none; border: none; color: white; font-size: 1.5em; cursor: pointer;">✕</button>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+            <div class="message ai">
+                <div class="message-avatar"><i class="fas fa-robot"></i></div>
+                <div class="message-content">
+                    ¡Hola! Soy el asistente de WebDesign Pro. ¿En qué puedo ayudarte hoy?
+                </div>
+            </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+            <i class="fas fa-spinner fa-spin"></i> Escribiendo...
+        </div>
+
+        <div class="chat-input">
+            <input type="text" id="messageInput" placeholder="Escribe tu mensaje..." onkeypress="if(event.key === 'Enter') enviarMensaje()">
+            <button onclick="enviarMensaje()"><i class="fas fa-paper-plane"></i></button>
+        </div>
+
+        <div class="human-option" id="humanOption">
+            <p>¿Prefieres hablar con un humano?</p>
+            <button onclick="pedirHumano()"><i class="fas fa-user"></i> Hablar con humano</button>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+        import { getFirestore, collection, addDoc, query, where, onSnapshot, doc, setDoc, updateDoc } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+        // CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyB7b14uGLcg91BK0eGyQn4l7Ems86pwps4",
+            authDomain: "webdesign-pro-ac3b4.firebaseapp.com",
+            projectId: "webdesign-pro-ac3b4",
+            storageBucket: "webdesign-pro-ac3b4.firebasestorage.app",
+            messagingSenderId: "315574762199",
+            appId: "1:315574762199:web:e1713ef1c75bf0c5c54e92"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let chatMode = 'ia'; // 'ia' o 'humano'
+        let userId = localStorage.getItem('chatUserId') || 'user_' + Date.now();
+        localStorage.setItem('chatUserId', userId);
+
+        // Escuchar mensajes en tiempo real
+        function escucharMensajes() {
+            const q = query(collection(db, 'chat'), where('userId', '==', userId), orderBy('fecha', 'asc'));
+            
+            onSnapshot(q, (snapshot) => {
+                const messagesContainer = document.getElementById('chatMessages');
+                const messagesActuales = messagesContainer.querySelectorAll('.message');
+                const mensajesActualesCount = messagesActuales.length;
+                
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const data = change.doc.data();
+                        const messageDiv = document.createElement('div');
+                        messageDiv.className = `message ${data.tipo === 'admin' ? 'admin' : 'ai'}`;
+                        messageDiv.innerHTML = `
+                            <div class="message-avatar">
+                                <i class="fas fa-${data.tipo === 'admin' ? 'user' : 'robot'}"></i>
+                            </div>
+                            <div class="message-content">${data.mensaje}</div>
+                        `;
+                        messagesContainer.appendChild(messageDiv);
+                        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    }
+                });
+            });
+        }
+
+        // Iniciar escucha de mensajes
+        escucharMensajes();
+
+        // Respuestas de IA
+        const respuestasIA = {
+            'precio': 'Tenemos tres paquetes: Básico (150€), Profesional (300€) y Empresarial (500€). ¿Quieres más detalles sobre alguno?',
+            'paquete': 'Los paquetes son: Básico (1 página), Profesional (2-4 páginas) y Empresarial (5-8 páginas). ¿Cuál te interesa?',
+            'tiempo': 'El tiempo de entrega depende del paquete: Básico (3-5 días), Profesional (5-7 días) y Empresarial (7-10 días).',
+            'pagar': 'Aceptamos PayPal, Bizum, transferencia y tarjetas. Puedes pagar directamente en la sección de precios.',
+            'contacto': 'Puedes usar este chat o enviarnos un formulario desde la web principal.',
+            'garantía': 'Ofrecemos 30 días de soporte técnico y 3 revisiones gratuitas en el paquete Profesional.',
+            'default': 'Gracias por tu pregunta. ¿Puedes darme más detalles para ayudarte mejor?'
+        };
+
+        function enviarMensaje() {
+            const input = document.getElementById('messageInput');
+            const mensaje = input.value.trim();
+            
+            if (!mensaje) return;
+            
+            // Agregar mensaje del usuario
+            agregarMensaje(mensaje, 'user');
+            input.value = '';
+            
+            // Guardar en Firebase
+            guardarMensaje(mensaje, 'user');
+            
+            if (chatMode === 'ia') {
+                // Respuesta de IA
+                setTimeout(() => {
+                    const respuesta = generarRespuestaIA(mensaje);
+                    agregarMensaje(respuesta, 'ai');
+                    guardarMensaje(respuesta, 'ai');
+                }, 1000);
+            }
+        }
+
+        function generarRespuestaIA(mensaje) {
+            const mensajeLower = mensaje.toLowerCase();
+            
+            for (const [clave, respuesta] of Object.entries(respuestasIA)) {
+                if (mensajeLower.includes(clave)) {
+                    return respuesta;
+                }
+            }
+            
+            return respuestasIA.default;
+        }
+
+        function agregarMensaje(texto, tipo) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const typingIndicator = document.getElementById('typingIndicator');
+            
+            if (tipo === 'ai') {
+                typingIndicator.classList.add('active');
+                setTimeout(() => {
+                    typingIndicator.classList.remove('active');
+                }, 500);
+            }
+            
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${tipo}`;
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <i class="fas fa-${tipo === 'ai' ? 'robot' : 'user'}"></i>
+                </div>
+                <div class="message-content">${texto}</div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function pedirHumano() {
+            chatMode = 'humano';
+            document.getElementById('chatMode').textContent = 'Modo: Humano';
+            document.getElementById('humanOption').style.display = 'none';
+            
+            agregarMensaje('Perfecto, ahora hablarás con un humano. Un agente te responderá pronto.', 'ai');
+            guardarMensaje('Usuario solicitó hablar con humano', 'sistema');
+            
+            // Notificar al admin
+            notificarAdmin();
+        }
+
+        async function guardarMensaje(texto, tipo) {
+            try {
+                await addDoc(collection(db, 'chat'), {
+                    userId: userId,
+                    mensaje: texto,
+                    tipo: tipo,
+                    modo: chatMode,
+                    fecha: new Date().toISOString(),
+                    leido: false
+                });
+            } catch (error) {
+                console.error('Error al guardar mensaje:', error);
+            }
+        }
+
+        async function notificarAdmin() {
+            try {
+                await addDoc(collection(db, 'notificaciones'), {
+                    tipo: 'chat_humano',
+                    userId: userId,
+                    fecha: new Date().toISOString(),
+                    leido: false
+                });
+            } catch (error) {
+                console.error('Error al notificar admin:', error);
+            }
+        }
+
+        function cerrarChat() {
+            window.close();
+        }
+
+        // Hacer funciones globales
+        window.enviarMensaje = enviarMensaje;
+        window.pedirHumano = pedirHumano;
+        window.cerrarChat = cerrarChat;
+    </script>
+</body>
+</html>
